@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot</title>
+  <link rel="stylesheet" href="css/chatbot.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="header-left">
+        <i class="fas fa-robot"></i>
+        <div>
+          <h1>AI Chatbot</h1>
+          <span class="status">Online</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="clear-chat" class="icon-btn" title="New Chat"><i class="fas fa-trash-alt"></i></button>
+        <button id="settings-btn" class="icon-btn" title="Settings">
+          <i class="fas fa-cog"></i>
+        </button>
+        <a href="index.html" class="icon-btn" title="Back to Portfolio">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+      </div>
+    </div>
+
+    <div id="settings-panel" class="settings-panel hidden">
+      <div class="settings-content">
+        <h3><i class="fas fa-cog"></i> Settings</h3>
+        <label for="api-key">API Key</label>
+        <div class="input-group">
+          <input type="password" id="api-key" placeholder="Enter your API key">
+          <button id="toggle-key" class="icon-btn-sm"><i class="fas fa-eye"></i></button>
+        </div>
+        <label for="api-provider">Provider</label>
+        <select id="api-provider">
+          <option value="openai">OpenAI</option>
+          <option value="gemini">Google Gemini</option>
+        </select>
+        <label for="system-prompt">System Prompt</label>
+        <textarea id="system-prompt" rows="3" placeholder="You are a helpful assistant...">You are a helpful, friendly AI assistant. Be concise and clear in your responses.</textarea>
+        <div class="settings-actions">
+          <button id="save-settings" class="btn-sm">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="message bot">
+        <div class="avatar"><i class="fas fa-robot"></i></div>
+        <div class="bubble">Hi! I'm your AI assistant. Ask me anything. Click the ⚙️ icon to set up your API key first.</div>
+      </div>
+      <div id="suggested-prompts" class="suggested-prompts">
+        <button class="suggestion-chip" data-prompt="Explain quantum computing in simple terms">Explain quantum computing</button>
+        <button class="suggestion-chip" data-prompt="Write a short poem about the ocean">Write a poem</button>
+        <button class="suggestion-chip" data-prompt="What are the best practices for web development?">Web dev tips</button>
+        <button class="suggestion-chip" data-prompt="Tell me an interesting fun fact">Fun fact</button>
+      </div>
+    </div>
+
+    <form class="chat-input" id="chat-form">
+      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+      <button type="submit" id="send-btn" title="Send">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="js/chatbot.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 10 Most Famous Games</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: #e0e0e0; }
+    header {
+      text-align: center; padding: 60px 20px 40px;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    }
+    header h1 { font-size: 3rem; margin-bottom: 10px; }
+    header h1 span { color: #e94560; }
+    header p { font-size: 1.1rem; color: #aaa; }
+    .container {
+      max-width: 1200px; margin: 0 auto; padding: 40px 20px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+    }
+    .game-card {
+      background: #1a1a2e; border-radius: 16px; padding: 20px;
+      transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column;
+    }
+    .game-card:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(233,69,96,0.15); }
+    .rank {
+      font-size: 2rem; font-weight: 900; color: #e94560;
+      margin-bottom: 10px;
+    }
+    .game-info h2 { font-size: 1.2rem; margin-bottom: 6px; }
+    .game-info .genre {
+      display: inline-block; background: #e94560; color: #fff;
+      padding: 3px 10px; border-radius: 20px; font-size: 0.75rem;
+      margin-bottom: 8px;
+    }
+    .game-info p { line-height: 1.6; color: #b0b0b0; font-size: 0.85rem; }
+    .game-info .details { margin-top: 8px; font-size: 0.8rem; color: #888; }
+    footer {
+      text-align: center; padding: 30px; color: #666;
+      border-top: 1px solid #222;
+    }
+    @media (max-width: 1000px) { .container { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <p style="font-size:0.9rem;color:#888;margin-bottom:5px;">by Ahmad raza</p>
+    <h1><span>Top 10</span> Most Famous Games</h1>
+    <p>The most iconic and influential video games of all time</p>
+  </header>
+
+  <div class="container">
+
+    <div class="game-card">
+      <div class="rank">#1</div>
+      <div class="game-info">
+        <h2>Tetris</h2>
+        <span class="genre">Puzzle</span>
+        <p>Created by Alexey Pajitnov in 1984, Tetris is the best-selling puzzle game of all time. Its simple yet addictive gameplay — arranging falling tetrominoes to complete lines — has made it a timeless classic on virtually every platform ever created.</p>
+        <div class="details">Released: 1984 | Developer: Alexey Pajitnov</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#2</div>
+      <div class="game-info">
+        <h2>Minecraft</h2>
+        <span class="genre">Sandbox / Survival</span>
+        <p>The best-selling video game in history, Minecraft lets players explore a blocky, procedurally generated world, mine resources, craft tools, and build anything imaginable. Its creative freedom and survival mode have captivated over 200 million players worldwide.</p>
+        <div class="details">Released: 2011 | Developer: Mojang Studios</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#3</div>
+      <div class="game-info">
+        <h2>Grand Theft Auto V</h2>
+        <span class="genre">Action-Adventure / Open World</span>
+        <p>Rockstar's masterpiece set in the sprawling city of Los Santos. With three playable protagonists, a gripping story, and the wildly popular GTA Online mode, it has generated over $8 billion in revenue — making it the most profitable entertainment product ever.</p>
+        <div class="details">Released: 2013 | Developer: Rockstar North</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#4</div>
+      <div class="game-info">
+        <h2>The Legend of Zelda: Breath of the Wild</h2>
+        <span class="genre">Action-Adventure</span>
+        <p>Nintendo's groundbreaking open-air adventure redefined the Zelda franchise. Players explore the vast kingdom of Hyrule, solving puzzles, battling monsters, and uncovering secrets. Its freedom of exploration and physics-based gameplay set a new standard for open-world games.</p>
+        <div class="details">Released: 2017 | Developer: Nintendo EPD</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#5</div>
+      <div class="game-info">
+        <h2>Super Mario Bros.</h2>
+        <span class="genre">Platformer</span>
+        <p>The game that saved the video game industry. Super Mario Bros. introduced tight platforming mechanics, hidden secrets, and iconic power-ups. It defined the side-scrolling genre and made Mario the most recognizable character in gaming history.</p>
+        <div class="details">Released: 1985 | Developer: Nintendo</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#6</div>
+      <div class="game-info">
+        <h2>The Witcher 3: Wild Hunt</h2>
+        <span class="genre">RPG / Open World</span>
+        <p>CD Projekt Red's magnum opus follows Geralt of Rivia on a quest through a morally gray fantasy world. Renowned for its deep storytelling, rich characters, and meaningful choices, it remains one of the most celebrated RPGs ever made.</p>
+        <div class="details">Released: 2015 | Developer: CD Projekt Red</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#7</div>
+      <div class="game-info">
+        <h2>Red Dead Redemption 2</h2>
+        <span class="genre">Action-Adventure / Western</span>
+        <p>Rockstar's stunning prequel set in the dying days of the Wild West. With unparalleled attention to detail, a deeply emotional story about outlaw Arthur Morgan, and a living, breathing open world, it set a new benchmark for immersion in gaming.</p>
+        <div class="details">Released: 2018 | Developer: Rockstar Studios</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#8</div>
+      <div class="game-info">
+        <h2>Fortnite</h2>
+        <span class="genre">Battle Royale</span>
+        <p>Epic Games' cultural phenomenon that took the world by storm. With its colorful art style, building mechanics, and constant live-event updates, Fortnite became more than a game — it became a social platform and a major force in pop culture with hundreds of millions of players.</p>
+        <div class="details">Released: 2017 | Developer: Epic Games</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#9</div>
+      <div class="game-info">
+        <h2>Pokémon Red & Blue</h2>
+        <span class="genre">RPG / Monster Collection</span>
+        <p>The games that started a global phenomenon. Players journey through Kanto to catch, train, and battle 151 Pokémon. Its "Gotta Catch 'Em All" mantra sparked a franchise spanning games, cards, anime, and movies — one of the highest-grossing media franchises ever.</p>
+        <div class="details">Released: 1996 | Developer: Game Freak</div>
+      </div>
+    </div>
+
+    <div class="game-card">
+      <div class="rank">#10</div>
+      <div class="game-info">
+        <h2>Elden Ring</h2>
+        <span class="genre">Action RPG / Souls-like</span>
+        <p>FromSoftware's open-world epic, developed in collaboration with George R.R. Martin. Set in the vast Lands Between, players face punishing combat, explore breathtaking dungeons, and uncover a deep, fragmented lore. Winner of Game of the Year 2022 and a modern masterpiece.</p>
+        <div class="details">Released: 2022 | Developer: FromSoftware</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Top 10 Famous Games</p>
+  </footer>
+</body>
+</html>
