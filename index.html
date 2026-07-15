@@ -6,6 +6,7 @@
   <title>Ahmad Raza | Portfolio</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
   <header>
@@ -42,7 +43,7 @@
           <p>When I'm not coding, you'll find me exploring new technologies, contributing to open source, or writing technical blog posts.</p>
         </div>
         <div class="about-image">
-          <img src="DVOP1901.JPG" alt="Ahmad Raza" class="profile-photo">
+          <img src="profile.jpeg" alt="Ahmad Raza" class="profile-photo">
         </div>
       </div>
     </div>
@@ -112,6 +113,7 @@
     <div class="container">
       <h2 class="section-title">Get In Touch</h2>
       <p class="contact-intro">I'm currently open to new opportunities. Whether you have a question or just want to say hi, feel free to reach out!</p>
+      <p class="contact-email">Or reach me directly at <a href="mailto:ahmadaliraza646@gmail.com">ahmadaliraza646@gmail.com</a></p>
       <form id="contact-form">
         <input type="text" placeholder="Your Name" required>
         <input type="email" placeholder="Your Email" required>
@@ -128,9 +130,27 @@
         <a href="#"><i class="fab fa-linkedin-in"></i></a>
         <a href="#"><i class="fab fa-twitter"></i></a>
       </div>
-      <p>&copy; 2026 Your Name. All rights reserved.</p>
+      <p>&copy; 2026 Ahmad Raza. All rights reserved.</p>
     </div>
   </footer>
+
+  <div class="chatbot-toggle" id="chatbot-toggle" aria-label="Open chat">
+    <i class="fas fa-comment-dots"></i>
+  </div>
+
+  <div class="chatbot-window" id="chatbot-window">
+    <div class="chatbot-header">
+      <span><i class="fas fa-robot"></i> Portfolio Bot</span>
+      <button id="chatbot-close" aria-label="Close chat">&times;</button>
+    </div>
+    <div class="chatbot-messages" id="chatbot-messages">
+      <div class="chatbot-msg bot">Hi! I'm Ahmad's assistant. Ask me about his skills, projects, or how to contact him!</div>
+    </div>
+    <div class="chatbot-input-area">
+      <input type="text" id="chatbot-input" placeholder="Type a message..." autocomplete="off">
+      <button id="chatbot-send" aria-label="Send"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
 
   <script src="js/main.js"></script>
 </body>

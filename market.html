@@ -677,6 +677,18 @@
   </footer>
 
   <script>
+    // ================ API Client ================
+    const API_BASE = '/api';
+
+    async function api(method, path, body, headers = {}) {
+      const opts = { method, headers: { 'Content-Type': 'application/json', ...headers } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(API_BASE + path, opts);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
     // ================ Security Utilities ================
     function sanitize(str) {
       const d = document.createElement('div');
@@ -798,6 +810,9 @@
     const userInfo = document.getElementById('userInfo');
     const userNameDisplay = document.getElementById('userNameDisplay');
 
+    let currentUser = null;
+    let currentRole = '';
+
     function openModal(loginMode) {
       isLogin = loginMode;
       signupFields.style.display = isLogin ? 'none' : 'block';
@@ -814,156 +829,130 @@
 
     function closeModal() { overlay.classList.remove('active'); }
 
-    const ADMIN_HASH = '3b612c75a7b5048a435fb6ec81e52ff92d6d795a8b5a9c17070f6a63c97a53b2';
-
-    // ================ localStorage Data Layer ================
-    function getUsers() {
-      return JSON.parse(localStorage.getItem('_us') || '[]');
-    }
-
-    function setUsers(users) {
-      localStorage.setItem('_us', JSON.stringify(users));
-    }
-
-    function getProducts() {
-      return JSON.parse(localStorage.getItem('_prods') || '[]');
-    }
-
-    function setProducts(prods) {
-      localStorage.setItem('_prods', JSON.stringify(prods));
-    }
-
-    // Seed admin
-    (function seedAdmin() {
-      const users = getUsers();
-      if (!users.find(u => u.email === 'admin@admin.com')) {
-        users.push({ name: 'Admin', email: 'admin@admin.com', pwd: ADMIN_HASH, role: 'admin' });
-        setUsers(users);
-      }
-    })();
-
-    function isAdmin(email) {
-      const users = getUsers();
-      const u = users.find(x => x.email === email);
-      return u && u.role === 'admin';
-    }
-
     function updateUI() {
       const s = getValidSession();
       if (s) {
         authButtons.style.display = 'none';
         userInfo.style.display = 'flex';
         userNameDisplay.textContent = 'Hi, ' + sanitize(s.name);
-        document.getElementById('adminLink').style.display = isAdmin(s.email) ? 'inline' : 'none';
+        currentUser = s.email;
+        document.getElementById('adminLink').style.display = currentRole === 'admin' ? 'inline' : 'none';
       } else {
         authButtons.style.display = 'flex';
         userInfo.style.display = 'none';
         document.getElementById('adminLink').style.display = 'none';
+        currentUser = null;
+        currentRole = '';
       }
     }
 
     // ================ Featured Products ================
-    function loadFeaturedProducts() {
-      const prods = getProducts();
-      const grid = document.getElementById('featuredProducts');
-      if (prods.length === 0) {
-        grid.innerHTML = '<p style="text-align:center;color:#888;">No products available yet.</p>';
-        return;
-      }
-      const featured = prods.slice(0, 4);
-      grid.innerHTML = featured.map(p => `
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box"></i></div>
-          <div class="product-body">
-            <div class="product-tags">${(p.tags || []).map(t => '<span>' + sanitize(t) + '</span>').join('')}</div>
-            <h3>${sanitize(p.name)}</h3>
-            <p>${sanitize(p.desc || '')}</p>
-            <span class="product-price">$${p.price}</span>
+    async function loadFeaturedProducts() {
+      try {
+        const prods = await api('GET', '/products');
+        const grid = document.getElementById('featuredProducts');
+        if (prods.length === 0) {
+          grid.innerHTML = '<p style="text-align:center;color:#888;">No products available yet.</p>';
+          return;
+        }
+        const featured = prods.slice(0, 4);
+        grid.innerHTML = featured.map(p => `
+          <div class="product-card">
+            <div class="product-img"><i class="fas fa-box"></i></div>
+            <div class="product-body">
+              <div class="product-tags">${(p.tags || []).map(t => '<span>' + sanitize(t) + '</span>').join('')}</div>
+              <h3>${sanitize(p.name)}</h3>
+              <p>${sanitize(p.description || '')}</p>
+              <span class="product-price">$${p.price}</span>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      } catch {
+        document.getElementById('featuredProducts').innerHTML = '<p style="text-align:center;color:#888;">Could not load products.</p>';
+      }
     }
 
     // ================ Admin Dashboard ================
     let editingProdId = null;
 
-    function renderStats() {
-      const users = getUsers();
-      const prods = getProducts();
-      document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card"><h3>Total Users</h3><div class="stat-value">${users.length}</div></div>
-        <div class="stat-card"><h3>Total Products</h3><div class="stat-value">${prods.length}</div></div>
-        <div class="stat-card"><h3>Admins</h3><div class="stat-value">${users.filter(u => u.role === 'admin').length}</div></div>
-        <div class="stat-card"><h3>Regular Users</h3><div class="stat-value">${users.filter(u => !u.role).length}</div></div>
-      `;
+    async function renderStats() {
+      try {
+        const s = await api('GET', '/stats', null, { 'x-user-email': currentUser });
+        document.getElementById('statsGrid').innerHTML = `
+          <div class="stat-card"><h3>Total Users</h3><div class="stat-value">${s.totalUsers}</div></div>
+          <div class="stat-card"><h3>Total Products</h3><div class="stat-value">${s.totalProducts}</div></div>
+          <div class="stat-card"><h3>Admins</h3><div class="stat-value">${s.adminCount}</div></div>
+          <div class="stat-card"><h3>Regular Users</h3><div class="stat-value">${s.regularCount}</div></div>
+        `;
+      } catch { document.getElementById('statsGrid').innerHTML = '<p>Error loading stats.</p>'; }
     }
 
-    function renderUsers() {
-      const users = getUsers();
-      const tbody = document.getElementById('usersTableBody');
-      tbody.innerHTML = users.filter(u => !u.role).map(u => `
-        <tr>
-          <td>${sanitize(u.name)}</td>
-          <td>${sanitize(u.email)}</td>
-          <td><button class="delete-btn" data-email="${u.email}">Delete</button></td>
-        </tr>
-      `).join('');
-      tbody.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (!confirm('Delete user ' + btn.dataset.email + '?')) return;
-          let us = getUsers();
-          us = us.filter(u => u.email !== btn.dataset.email);
-          setUsers(us);
-          renderUsers();
-          renderStats();
+    async function renderUsers() {
+      try {
+        const users = await api('GET', '/users', null, { 'x-user-email': currentUser });
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td>${sanitize(u.name)}</td>
+            <td>${sanitize(u.email)}</td>
+            <td><button class="delete-btn" data-email="${u.email}">Delete</button></td>
+          </tr>
+        `).join('');
+        tbody.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Delete user ' + btn.dataset.email + '?')) return;
+            await api('DELETE', '/users', { email: btn.dataset.email }, { 'x-user-email': currentUser });
+            await renderUsers();
+            await renderStats();
+          });
         });
-      });
+      } catch { document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="3">Error loading users.</td></tr>'; }
     }
 
-    function renderProducts() {
-      const prods = getProducts();
-      const tbody = document.getElementById('productsTableBody');
-      tbody.innerHTML = prods.map((p, i) => `
-        <tr>
-          <td>${sanitize(p.name)}</td>
-          <td>$${p.price}</td>
-          <td>${(p.tags || []).map(t => '<span style="background:#6c63ff20;color:#6c63ff;padding:2px 8px;border-radius:10px;font-size:0.8rem;margin:2px;display:inline-block;">' + sanitize(t) + '</span>').join('')}</td>
-          <td>
-            <button class="edit-btn" data-idx="${i}">Edit</button>
-            <button class="delete-btn" data-idx="${i}">Delete</button>
-          </td>
-        </tr>
-      `).join('');
-      tbody.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (!confirm('Delete product?')) return;
-          let prods2 = getProducts();
-          prods2.splice(parseInt(btn.dataset.idx), 1);
-          setProducts(prods2);
-          renderProducts();
-          renderStats();
+    async function renderProducts() {
+      try {
+        const prods = await api('GET', '/products');
+        const tbody = document.getElementById('productsTableBody');
+        tbody.innerHTML = prods.map(p => `
+          <tr>
+            <td>${sanitize(p.name)}</td>
+            <td>$${p.price}</td>
+            <td>${(p.tags || []).map(t => '<span style="background:#6c63ff20;color:#6c63ff;padding:2px 8px;border-radius:10px;font-size:0.8rem;margin:2px;display:inline-block;">' + sanitize(t) + '</span>').join('')}</td>
+            <td>
+              <button class="edit-btn" data-id="${p.id}">Edit</button>
+              <button class="delete-btn" data-id="${p.id}">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+        tbody.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Delete product?')) return;
+            await api('DELETE', '/products/' + btn.dataset.id, null, { 'x-user-email': currentUser });
+            await renderProducts();
+            await renderStats();
+          });
         });
-      });
-      tbody.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const prods2 = getProducts();
-          const p = prods2[parseInt(btn.dataset.idx)];
-          editingProdId = parseInt(btn.dataset.idx);
-          document.getElementById('prodName').value = p.name;
-          document.getElementById('prodDesc').value = p.desc || '';
-          document.getElementById('prodPrice').value = p.price;
-          document.getElementById('prodTags').value = (p.tags || []).join(', ');
-          document.getElementById('productFormTitle').textContent = 'Edit Product';
-          document.getElementById('prodSaveBtn').textContent = 'Update Product';
-          document.getElementById('prodCancelBtn').style.display = 'inline-block';
+        tbody.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const p = prods.find(x => x.id == btn.dataset.id);
+            if (!p) return;
+            editingProdId = p.id;
+            document.getElementById('prodName').value = p.name;
+            document.getElementById('prodDesc').value = p.description || '';
+            document.getElementById('prodPrice').value = p.price;
+            document.getElementById('prodTags').value = (p.tags || []).join(', ');
+            document.getElementById('productFormTitle').textContent = 'Edit Product';
+            document.getElementById('prodSaveBtn').textContent = 'Update Product';
+            document.getElementById('prodCancelBtn').style.display = 'inline-block';
+          });
         });
-      });
+      } catch { document.getElementById('productsTableBody').innerHTML = '<tr><td colspan="4">Error loading products.</td></tr>'; }
     }
 
-    function initAdmin() {
-      renderStats();
-      renderUsers();
-      renderProducts();
+    async function initAdmin() {
+      await renderStats();
+      await renderUsers();
+      await renderProducts();
     }
 
     // Admin Tabs
@@ -977,13 +966,13 @@
     });
 
     // Admin Link
-    document.getElementById('adminLink').addEventListener('click', e => {
+    document.getElementById('adminLink').addEventListener('click', async e => {
       e.preventDefault();
       document.querySelectorAll('section').forEach(s => s.style.display = 'none');
       document.getElementById('adminSection').classList.add('active');
       document.getElementById('adminSection').style.display = 'block';
       document.querySelector('footer').style.display = 'none';
-      initAdmin();
+      await initAdmin();
     });
 
     // Exit Admin
@@ -995,27 +984,25 @@
     });
 
     // Product Form Save
-    document.getElementById('prodSaveBtn').addEventListener('click', () => {
+    document.getElementById('prodSaveBtn').addEventListener('click', async () => {
       const name = document.getElementById('prodName').value.trim();
       const desc = document.getElementById('prodDesc').value.trim();
       const price = document.getElementById('prodPrice').value.trim();
       const tagsStr = document.getElementById('prodTags').value.trim();
       if (!name || !price) { alert('Name and price required.'); return; }
       const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
-      const prods = getProducts();
       if (editingProdId !== null) {
-        prods[editingProdId] = { name, desc, price, tags };
+        await api('PUT', '/products/' + editingProdId, { name, description: desc, price: parseFloat(price), tags }, { 'x-user-email': currentUser });
         editingProdId = null;
       } else {
-        prods.push({ name, desc, price, tags });
+        await api('POST', '/products', { name, description: desc, price: parseFloat(price), tags }, { 'x-user-email': currentUser });
       }
-      setProducts(prods);
       document.getElementById('productFormTitle').textContent = 'Add Product';
       document.getElementById('prodSaveBtn').textContent = 'Add Product';
       document.getElementById('prodCancelBtn').style.display = 'none';
       document.getElementById('productForm').reset();
-      renderProducts();
-      renderStats();
+      await renderProducts();
+      await renderStats();
     });
 
     // Product Form Cancel
@@ -1074,11 +1061,13 @@
           return;
         }
 
-        const users = getUsers();
-        const hash = await hashPassword(password);
-        const found = users.find(u => u.email === email && u.pwd === hash);
-
-        if (!found) {
+        try {
+          const hash = await hashPassword(password);
+          const user = await api('POST', '/login', { email, pwd: hash });
+          clearAttempts(email);
+          createSession(user.name, user.email);
+          currentRole = user.role || '';
+        } catch (err) {
           recordAttempt(email);
           const data = getAttempts(email);
           const left = MAX_ATTEMPTS - data.count;
@@ -1088,8 +1077,6 @@
           authError.style.display = 'block';
           return;
         }
-        clearAttempts(email);
-        createSession(found.name, found.email);
       } else {
         const name = document.getElementById('signupName').value.trim();
         if (!name) {
@@ -1112,31 +1099,46 @@
           authError.style.display = 'block';
           return;
         }
-        const users = getUsers();
-        if (users.find(u => u.email === email)) {
-          authError.textContent = 'Email already registered.';
+        try {
+          const hash = await hashPassword(password);
+          const user = await api('POST', '/signup', { name: sanitize(name), email, pwd: hash });
+          clearAttempts(email);
+          createSession(user.name, user.email);
+          currentRole = user.role || '';
+        } catch (err) {
+          authError.textContent = err.message || 'Signup failed.';
           authError.style.display = 'block';
           return;
         }
-        const hash = await hashPassword(password);
-        users.push({ name: sanitize(name), email, pwd: hash });
-        setUsers(users);
-        clearAttempts(email);
-        createSession(sanitize(name), email);
       }
       closeModal();
       updateUI();
+      await loadFeaturedProducts();
     });
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', () => {
       clearSess();
+      currentRole = '';
       updateUI();
     });
 
     // Init
-    updateUI();
-    loadFeaturedProducts();
+    (async function init() {
+      updateUI();
+      await loadFeaturedProducts();
+      // If logged in, fetch role
+      const s = getValidSession();
+      if (s) {
+        try {
+          const user = await api('POST', '/login', { email: s.email, pwd: '' }).catch(() => null);
+          if (user) currentRole = user.role || '';
+          else { clearSess(); currentRole = ''; }
+          updateUI();
+        } catch { /* session may be stale */ }
+      }
+    })();
+
     setInterval(updateUI, 60000);
   </script>
 </body>

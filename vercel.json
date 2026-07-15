@@ -1,9 +1,11 @@
 {
   "version": 2,
   "builds": [
-    { "src": "market.html", "use": "@vercel/static" }
+    { "src": "market.html", "use": "@vercel/static" },
+    { "src": "api/index.js", "use": "@vercel/node" }
   ],
   "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/(.*)", "dest": "/market.html" }
   ]
 }
