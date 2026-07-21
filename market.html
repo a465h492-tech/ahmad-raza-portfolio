@@ -78,6 +78,16 @@
     .modal form input:focus { outline: none; border-color: #6c63ff; }
     .modal form .btn { width: 100%; text-align: center; background: #6c63ff; color: #fff; }
     .modal form .btn:hover { background: #5a52d5; }
+    .modal form select {
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: #fff;
+      transition: border-color 0.3s;
+    }
+    .modal form select:focus { outline: none; border-color: #6c63ff; }
     .modal .switch-text {
       text-align: center;
       margin-top: 15px;
@@ -327,6 +337,22 @@
       margin-left: 5px;
     }
     #adminLink { display: none; }
+    #sellerLink { display: none; }
+    #ordersLink { display: none; }
+    #ordersSection {
+      display: none;
+      background: #f0f2f5;
+      min-height: 100vh;
+      padding-top: 80px;
+    }
+    #ordersSection.active { display: block; }
+    #sellerSection {
+      display: none;
+      background: #f0f2f5;
+      min-height: 100vh;
+      padding-top: 80px;
+    }
+    #sellerSection.active { display: block; }
     #adminSection {
       display: none;
       background: #f0f2f5;
@@ -476,7 +502,7 @@
 <body>
   <header>
     <nav>
-      <a href="#" class="logo"><i class="fas fa-store"></i> MarketHub</a>
+      <a href="#" class="logo"><i class="fas fa-store"></i> MarketHub <span class="live-badge" id="liveBadge" style="display:none;font-size:0.6rem;background:#22c55e;color:#fff;padding:2px 6px;border-radius:8px;vertical-align:middle;margin-left:6px;">● Live</span></a>
       <ul class="nav-links">
         <li><a href="#hero">Home</a></li>
         <li><a href="#tech">Tech Stack</a></li>
@@ -484,6 +510,8 @@
         <li><a href="#products">Products</a></li>
         <li><a href="#contact">Contact</a></li>
         <li><a href="#" id="adminLink">Admin</a></li>
+        <li><a href="#" id="sellerLink" style="display:none;">Sell</a></li>
+        <li><a href="#" id="ordersLink" style="display:none;">Orders</a></li>
       </ul>
       <div class="user-info" id="userInfo">
         <span id="userNameDisplay"></span>
@@ -525,8 +553,8 @@
         </div>
         <div class="tech-card">
           <i class="fas fa-database"></i>
-          <h3>Supabase</h3>
-          <p>Database for users, products, orders, and reviews.</p>
+          <h3>NeonDB</h3>
+          <p>PostgreSQL database for users, products, orders, and reviews.</p>
         </div>
         <div class="tech-card">
           <i class="fas fa-cloud"></i>
@@ -558,7 +586,7 @@
           <span class="arch-arrow">&rarr;</span>
           <span class="arch-node">Django REST API</span>
           <span class="arch-arrow">&rarr;</span>
-          <span class="arch-node">Supabase</span>
+          <span class="arch-node">NeonDB</span>
         </div>
         <div class="arch-details">
           <div class="arch-item">
@@ -571,7 +599,7 @@
           </div>
           <div class="arch-item">
             <h4>Database</h4>
-            <p>Supabase stores users, product listings, orders, reviews, and marketplace transactions with real-time capabilities.</p>
+            <p>NeonDB stores users, product listings, orders, reviews, and marketplace transactions with real-time capabilities.</p>
           </div>
           <div class="arch-item">
             <h4>Deployment</h4>
@@ -644,6 +672,64 @@
     </div>
   </section>
 
+  <!-- Seller Dashboard -->
+  <section id="sellerSection">
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1><i class="fas fa-store-alt"></i> My Seller Dashboard</h1>
+        <button class="btn" id="sellerExitBtn" style="background:#6c63ff;color:#fff;">Exit</button>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="seller-overview">Overview</button>
+        <button class="admin-tab" data-tab="seller-products">My Products</button>
+        <button class="admin-tab" data-tab="seller-sales">Sales</button>
+      </div>
+      <!-- Overview -->
+      <div class="admin-panel active" id="panel-seller-overview">
+        <div class="stats-grid" id="sellerStatsGrid"></div>
+      </div>
+      <!-- Products -->
+      <div class="admin-panel" id="panel-seller-products">
+        <div class="admin-form" id="sellerProductForm">
+          <h3 id="sellerProdFormTitle">Add Product</h3>
+          <p style="color:#888;font-size:0.85rem;margin-bottom:10px;"><i class="fas fa-percentage"></i> After a 10% platform fee, you earn 90% of the listed price.</p>
+          <input type="text" id="sellerProdName" placeholder="Product Name">
+          <textarea id="sellerProdDesc" rows="3" placeholder="Product Description"></textarea>
+          <input type="text" id="sellerProdPrice" placeholder="Price (e.g. 49.99)">
+          <input type="text" id="sellerProdTags" placeholder="Tags (comma separated, e.g. Digital,Template)">
+          <button class="btn" id="sellerProdSaveBtn">Add Product</button>
+          <button class="btn" id="sellerProdCancelBtn" style="display:none;background:#888;">Cancel</button>
+        </div>
+        <table class="admin-table">
+          <p style="color:#888;font-size:0.85rem;margin-bottom:10px;"><i class="fas fa-info-circle"></i> Platform fee: 10%. You earn 90% of each listing price.</p>
+          <thead><tr><th>Name</th><th>Price</th><th>Net Price</th><th>Tags</th><th>Action</th></tr></thead>
+          <tbody id="sellerProductsTableBody"></tbody>
+        </table>
+      </div>
+      <!-- Sales -->
+      <div class="admin-panel" id="panel-seller-sales">
+        <table class="admin-table">
+          <thead><tr><th>Product</th><th>Buyer</th><th>Amount</th><th>Commission</th><th>You Earn</th><th>Date</th></tr></thead>
+          <tbody id="sellerSalesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Orders Section -->
+  <section id="ordersSection">
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1><i class="fas fa-shopping-bag"></i> My Orders</h1>
+        <button class="btn" id="ordersExitBtn" style="background:#6c63ff;color:#fff;">Exit</button>
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>Product</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="ordersTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- Auth Modal -->
   <div class="modal-overlay" id="authModal">
     <div class="modal">
@@ -652,6 +738,13 @@
       <form id="authForm" autocomplete="off">
         <div id="signupFields" style="display:none;">
           <input type="text" id="signupName" placeholder="Full Name">
+          <div id="signupRoleGroup">
+            <label style="display:block;margin-bottom:5px;font-size:0.85rem;color:#666;">I want to:</label>
+            <select id="signupRole">
+              <option value="buyer">Buy</option>
+              <option value="seller">Sell</option>
+            </select>
+          </div>
         </div>
         <input type="email" id="authEmail" placeholder="Email Address" required>
         <input type="password" id="authPassword" placeholder="Password" required>
@@ -710,15 +803,15 @@
     const SESSION_DURATION = 30 * 60 * 1000;
 
     function getSess() {
-      try { return JSON.parse(sessionStorage.getItem('_s') || 'null'); } catch { return null; }
+      try { return JSON.parse(localStorage.getItem('_s') || 'null'); } catch { return null; }
     }
 
     function setSess(data) {
-      sessionStorage.setItem('_s', JSON.stringify(data));
+      localStorage.setItem('_s', JSON.stringify(data));
     }
 
     function clearSess() {
-      sessionStorage.removeItem('_s');
+      localStorage.removeItem('_s');
     }
 
     function createSession(name, email) {
@@ -834,13 +927,17 @@
       if (s) {
         authButtons.style.display = 'none';
         userInfo.style.display = 'flex';
-        userNameDisplay.textContent = 'Hi, ' + sanitize(s.name);
+        userNameDisplay.textContent = 'Hi, ' + sanitize(s.name) + (currentRole && currentRole !== 'admin' ? ' (' + currentRole + ')' : '');
         currentUser = s.email;
         document.getElementById('adminLink').style.display = currentRole === 'admin' ? 'inline' : 'none';
+        document.getElementById('sellerLink').style.display = currentRole !== 'buyer' ? 'inline' : 'none';
+        document.getElementById('ordersLink').style.display = 'inline';
       } else {
         authButtons.style.display = 'flex';
         userInfo.style.display = 'none';
         document.getElementById('adminLink').style.display = 'none';
+        document.getElementById('sellerLink').style.display = 'none';
+        document.getElementById('ordersLink').style.display = 'none';
         currentUser = null;
         currentRole = '';
       }
@@ -856,20 +953,179 @@
           return;
         }
         const featured = prods.slice(0, 4);
-        grid.innerHTML = featured.map(p => `
+        grid.innerHTML = featured.map(p => {
+          const stars = renderStars(p.avgRating);
+          return `
           <div class="product-card">
             <div class="product-img"><i class="fas fa-box"></i></div>
             <div class="product-body">
               <div class="product-tags">${(p.tags || []).map(t => '<span>' + sanitize(t) + '</span>').join('')}</div>
               <h3>${sanitize(p.name)}</h3>
               <p>${sanitize(p.description || '')}</p>
-              <span class="product-price">$${p.price}</span>
+              <span class="product-price">$${parseFloat(p.price).toFixed(2)}</span>
+              <div class="product-rating" style="margin:8px 0;font-size:0.9rem;">${stars} <span style="color:#888;font-size:0.8rem;">(${p.reviewCount} review${p.reviewCount!==1?'s':''})</span></div>
+              <button class="btn view-reviews-btn" data-id="${p.id}" style="font-size:0.8rem;padding:4px 10px;background:#e8e8e8;color:#333;">Reviews</button>
+              <button class="btn buy-btn" data-id="${p.id}" style="font-size:0.8rem;padding:4px 10px;background:#2ecc71;color:#fff;float:right;">Buy Now</button>
             </div>
-          </div>
-        `).join('');
+          </div>`;
+        }).join('');
+        // Wire buy buttons
+        grid.querySelectorAll('.buy-btn').forEach(btn => {
+          btn.addEventListener('click', async () => await buyProduct(btn.dataset.id));
+        });
+        // Wire review buttons
+        grid.querySelectorAll('.view-reviews-btn').forEach(btn => {
+          btn.addEventListener('click', async () => await toggleReviews(btn.dataset.id, btn));
+        });
       } catch {
         document.getElementById('featuredProducts').innerHTML = '<p style="text-align:center;color:#888;">Could not load products.</p>';
       }
+    }
+
+    function renderStars(avg) {
+      const a = Math.round(avg);
+      return '<span style="color:#f1c40f;">' + '★'.repeat(a) + '☆'.repeat(5-a) + '</span>';
+    }
+
+    var reviewsOpen = {};
+
+    async function toggleReviews(prodId, btn) {
+      const card = btn.closest('.product-card');
+      const existing = card.querySelector('.reviews-section');
+      if (existing) { existing.remove(); delete reviewsOpen[prodId]; return; }
+      try {
+        const revs = await api('GET', '/reviews?product_id=' + prodId);
+        const div = document.createElement('div');
+        div.className = 'reviews-section';
+        div.style.cssText = 'border-top:1px solid #ddd;margin-top:10px;padding-top:10px;font-size:0.85rem;';
+        let html = '';
+        // Write review form if logged in & purchased
+        const s = getValidSession();
+        if (s) {
+          try {
+            const orders = await api('GET', '/orders?buyer=' + encodeURIComponent(s.email));
+            const bought = orders.find(o => parseInt(o.product_id) === prodId);
+            if (bought) {
+              const already = revs.find(r => r.user_email === s.email);
+              if (!already) {
+                html += `<div style="margin-bottom:10px;padding:8px;background:#f9f9f9;border-radius:6px;">
+                  <strong>Write a Review</strong><br>
+                  <div style="margin:4px 0;" id="starSel-${prodId}">
+                    ${[1,2,3,4,5].map(i => `<span class="star-pick" data-val="${i}" style="cursor:pointer;font-size:1.3rem;color:#ccc;">★</span>`).join('')}
+                  </div>
+                  <textarea id="reviewComment-${prodId}" rows="2" placeholder="Your review (optional)" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;"></textarea>
+                  <button class="btn submit-review-btn" data-id="${prodId}" style="margin-top:4px;padding:4px 12px;background:#6c63ff;color:#fff;font-size:0.8rem;">Submit Review</button>
+                </div>`;
+              }
+            }
+          } catch {}
+        }
+        if (revs.length === 0) {
+          html += '<p style="color:#888;">No reviews yet.</p>';
+        } else {
+          html += revs.map(r => `<div style="margin-bottom:6px;"><strong>${sanitize(r.user_name)}</strong> ${renderStars(r.rating)} <em style="color:#888;">${new Date(r.created_at).toLocaleDateString()}</em><br>${sanitize(r.comment || '')}</div>`).join('');
+        }
+        div.innerHTML = html;
+        card.appendChild(div);
+        // Wire star selection
+        div.querySelectorAll('.star-pick').forEach(sp => {
+          sp.addEventListener('mouseover', () => {
+            const v = parseInt(sp.dataset.val);
+            div.querySelectorAll('.star-pick').forEach(el => {
+              el.style.color = parseInt(el.dataset.val) <= v ? '#f1c40f' : '#ccc';
+            });
+          });
+          sp.addEventListener('mouseleave', () => {
+            div.querySelectorAll('.star-pick').forEach(el => el.style.color = '#ccc');
+          });
+          sp.addEventListener('click', () => {
+            const v = parseInt(sp.dataset.val);
+            div.querySelectorAll('.star-pick').forEach(el => {
+              el.style.color = parseInt(el.dataset.val) <= v ? '#f1c40f' : '#ccc';
+            });
+            div.dataset.selectedRating = v;
+          });
+        });
+        // Wire submit review
+        div.querySelectorAll('.submit-review-btn').forEach(srb => {
+          srb.addEventListener('click', async () => {
+            const pid = srb.dataset.id;
+            const rating = parseInt(div.dataset.selectedRating);
+            if (!rating || rating < 1) { alert('Please select a star rating.'); return; }
+            const comment = document.getElementById('reviewComment-' + pid).value.trim();
+            try {
+              await api('POST', '/reviews', { product_id: parseInt(pid), rating, comment }, { 'x-user-email': s.email });
+              alert('Review submitted!');
+              await toggleReviews(pid, btn);
+            } catch (e) {
+              alert('Error: ' + (e.message || 'Failed to submit review'));
+            }
+          });
+        });
+      } catch(e) {
+        const div = document.createElement('div');
+        div.className = 'reviews-section';
+        div.style.cssText = 'border-top:1px solid #ddd;margin-top:10px;padding-top:10px;font-size:0.85rem;color:red;';
+        div.innerHTML = 'Error loading reviews.';
+        card.appendChild(div);
+      }
+    }
+
+    async function buyProduct(prodId) {
+      const s = getValidSession();
+      if (!s) { alert('Please login to buy.'); return; }
+      if (!confirm('Confirm purchase?')) return;
+      try {
+        const result = await api('POST', '/orders', { product_id: parseInt(prodId) }, { 'x-user-email': s.email });
+        alert('Purchase successful! You can now write a review.');
+        await loadFeaturedProducts();
+      } catch (e) {
+        alert('Error: ' + (e.message || 'Purchase failed'));
+      }
+    }
+
+    async function loadOrders() {
+      const s = getValidSession();
+      if (!s) return;
+      try {
+        const orders = await api('GET', '/orders?buyer=' + encodeURIComponent(s.email));
+        const tbody = document.getElementById('ordersTableBody');
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;">No orders yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td>${sanitize(o.product_name)}</td>
+            <td>$${parseFloat(o.product_price).toFixed(2)}</td>
+            <td>${sanitize(o.status)}</td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch { document.getElementById('ordersTableBody').innerHTML = '<tr><td colspan="4">Error loading orders.</td></tr>'; }
+    }
+
+    async function renderSellerSales() {
+      const s = getValidSession();
+      if (!s) return;
+      try {
+        const orders = await api('GET', '/orders?seller=' + encodeURIComponent(s.email));
+        const tbody = document.getElementById('sellerSalesTableBody');
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No sales yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td>${sanitize(o.product_name)}</td>
+            <td>${sanitize(o.buyer_name)} (${sanitize(o.buyer_email)})</td>
+            <td>$${parseFloat(o.product_price).toFixed(2)}</td>
+            <td>$${parseFloat(o.commission).toFixed(2)}</td>
+            <td>$${parseFloat(o.net_amount).toFixed(2)}</td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch { document.getElementById('sellerSalesTableBody').innerHTML = '<tr><td colspan="6">Error loading sales.</td></tr>'; }
     }
 
     // ================ Admin Dashboard ================
@@ -883,6 +1139,8 @@
           <div class="stat-card"><h3>Total Products</h3><div class="stat-value">${s.totalProducts}</div></div>
           <div class="stat-card"><h3>Admins</h3><div class="stat-value">${s.adminCount}</div></div>
           <div class="stat-card"><h3>Regular Users</h3><div class="stat-value">${s.regularCount}</div></div>
+          <div class="stat-card"><h3>Total Orders</h3><div class="stat-value">${s.totalOrders}</div></div>
+          <div class="stat-card"><h3>Total Revenue</h3><div class="stat-value">$${s.totalRevenue.toFixed(2)}</div></div>
         `;
       } catch { document.getElementById('statsGrid').innerHTML = '<p>Error loading stats.</p>'; }
     }
@@ -962,6 +1220,8 @@
         document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'seller-sales') renderSellerSales();
+        if (tab.dataset.tab === 'seller-products') renderSellerProducts();
       });
     });
 
@@ -1012,6 +1272,135 @@
       document.getElementById('prodSaveBtn').textContent = 'Add Product';
       document.getElementById('prodCancelBtn').style.display = 'none';
       document.getElementById('productForm').reset();
+    });
+
+    // ================ Seller Dashboard ================
+    let sellerEditingId = null;
+
+    async function renderSellerStats() {
+      try {
+        const s = await api('GET', '/seller-stats', null, { 'x-user-email': currentUser });
+        document.getElementById('sellerStatsGrid').innerHTML = `
+          <div class="stat-card"><h3>My Products</h3><div class="stat-value">${s.totalProducts}</div></div>
+          <div class="stat-card"><h3>Total Sales</h3><div class="stat-value">${s.totalSales}</div></div>
+          <div class="stat-card"><h3>Gross Revenue</h3><div class="stat-value">$${s.totalGross}</div></div>
+          <div class="stat-card"><h3>Platform Fee (${(s.commissionRate * 100).toFixed(0)}%)</h3><div class="stat-value">$${s.commission}</div></div>
+          <div class="stat-card"><h3>Net Earnings</h3><div class="stat-value">$${s.totalNet}</div></div>
+          <div class="stat-card"><h3>Sales Revenue</h3><div class="stat-value">$${s.salesRevenue}</div></div>
+        `;
+      } catch { document.getElementById('sellerStatsGrid').innerHTML = '<p>Error loading stats.</p>'; }
+    }
+
+    async function renderSellerProducts() {
+      try {
+        const prods = await api('GET', '/products?seller=' + encodeURIComponent(currentUser));
+        const tbody = document.getElementById('sellerProductsTableBody');
+        tbody.innerHTML = prods.map(p => `
+          <tr>
+            <td>${sanitize(p.name)}</td>
+            <td>$${p.price}</td>
+            <td>$${(parseFloat(p.price) * 0.9).toFixed(2)}</td>
+            <td>${(p.tags || []).map(t => '<span style="background:#6c63ff20;color:#6c63ff;padding:2px 8px;border-radius:10px;font-size:0.8rem;margin:2px;display:inline-block;">' + sanitize(t) + '</span>').join('')}</td>
+            <td>
+              <button class="edit-btn" data-id="${p.id}">Edit</button>
+              <button class="delete-btn" data-id="${p.id}">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+        tbody.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Delete product?')) return;
+            await api('DELETE', '/products/' + btn.dataset.id, null, { 'x-user-email': currentUser });
+            await renderSellerProducts();
+            await renderSellerStats();
+          });
+        });
+        tbody.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const p = prods.find(x => x.id == btn.dataset.id);
+            if (!p) return;
+            sellerEditingId = p.id;
+            document.getElementById('sellerProdName').value = p.name;
+            document.getElementById('sellerProdDesc').value = p.description || '';
+            document.getElementById('sellerProdPrice').value = p.price;
+            document.getElementById('sellerProdTags').value = (p.tags || []).join(', ');
+            document.getElementById('sellerProdFormTitle').textContent = 'Edit Product';
+            document.getElementById('sellerProdSaveBtn').textContent = 'Update Product';
+            document.getElementById('sellerProdCancelBtn').style.display = 'inline-block';
+          });
+        });
+      } catch { document.getElementById('sellerProductsTableBody').innerHTML = '<tr><td colspan="5">Error loading products.</td></tr>'; }
+    }
+
+    // Seller tabs use same handler as admin tabs (shared class names)
+
+    // Seller link
+    document.getElementById('sellerLink').addEventListener('click', async e => {
+      e.preventDefault();
+      document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+      document.getElementById('sellerSection').classList.add('active');
+      document.getElementById('sellerSection').style.display = 'block';
+      document.querySelector('footer').style.display = 'none';
+      await renderSellerStats();
+      await renderSellerProducts();
+      await renderSellerSales();
+    });
+
+    // Exit seller
+    document.getElementById('sellerExitBtn').addEventListener('click', () => {
+      document.getElementById('sellerSection').classList.remove('active');
+      document.getElementById('sellerSection').style.display = 'none';
+      document.querySelectorAll('section').forEach(s => s.style.display = '');
+      document.querySelector('footer').style.display = '';
+    });
+
+    // Orders link
+    document.getElementById('ordersLink').addEventListener('click', async e => {
+      e.preventDefault();
+      document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+      document.getElementById('ordersSection').classList.add('active');
+      document.getElementById('ordersSection').style.display = 'block';
+      document.querySelector('footer').style.display = 'none';
+      await loadOrders();
+    });
+
+    // Orders exit
+    document.getElementById('ordersExitBtn').addEventListener('click', () => {
+      document.getElementById('ordersSection').classList.remove('active');
+      document.getElementById('ordersSection').style.display = 'none';
+      document.querySelectorAll('section').forEach(s => s.style.display = '');
+      document.querySelector('footer').style.display = '';
+    });
+
+    // Seller product form save
+    document.getElementById('sellerProdSaveBtn').addEventListener('click', async () => {
+      const name = document.getElementById('sellerProdName').value.trim();
+      const desc = document.getElementById('sellerProdDesc').value.trim();
+      const price = document.getElementById('sellerProdPrice').value.trim();
+      const tagsStr = document.getElementById('sellerProdTags').value.trim();
+      if (!name || !price) { alert('Name and price required.'); return; }
+      const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+      if (sellerEditingId !== null) {
+        await api('PUT', '/products/' + sellerEditingId, { name, description: desc, price: parseFloat(price), tags }, { 'x-user-email': currentUser });
+        sellerEditingId = null;
+      } else {
+        await api('POST', '/products', { name, description: desc, price: parseFloat(price), tags }, { 'x-user-email': currentUser });
+      }
+      document.getElementById('sellerProdFormTitle').textContent = 'Add Product';
+      document.getElementById('sellerProdSaveBtn').textContent = 'Add Product';
+      document.getElementById('sellerProdCancelBtn').style.display = 'none';
+      document.getElementById('sellerProductForm').reset();
+      await renderSellerProducts();
+      await renderSellerStats();
+    });
+
+    // Seller product form cancel
+    document.getElementById('sellerProdCancelBtn').addEventListener('click', () => {
+      sellerEditingId = null;
+      document.getElementById('sellerProdFormTitle').textContent = 'Add Product';
+      document.getElementById('sellerProdSaveBtn').textContent = 'Add Product';
+      document.getElementById('sellerProdCancelBtn').style.display = 'none';
+      document.getElementById('sellerProductForm').reset();
     });
 
     document.getElementById('loginBtn').addEventListener('click', () => openModal(true));
@@ -1101,7 +1490,7 @@
         }
         try {
           const hash = await hashPassword(password);
-          const user = await api('POST', '/signup', { name: sanitize(name), email, pwd: hash });
+          const user = await api('POST', '/signup', { name: sanitize(name), email, pwd: hash, role: document.getElementById('signupRole').value });
           clearAttempts(email);
           createSession(user.name, user.email);
           currentRole = user.role || '';
@@ -1122,6 +1511,66 @@
       currentRole = '';
       updateUI();
     });
+
+    // ================ Live Polling Updates ================
+    let prevProductsHash = '';
+
+    async function pollProducts() {
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) return;
+        const products = await res.json();
+        const hash = JSON.stringify(products);
+        if (hash === prevProductsHash) return;
+        prevProductsHash = hash;
+        document.getElementById('liveBadge').style.display = 'inline-block';
+
+        // update public grid
+        const grid = document.getElementById('featuredProducts');
+        if (grid) {
+          const featured = products.slice(0, 4);
+          grid.innerHTML = featured.length === 0
+            ? '<p style="text-align:center;color:#888;">No products available yet.</p>'
+            : featured.map(p => {
+                const stars = renderStars(p.avgRating);
+                return `
+                <div class="product-card">
+                  <div class="product-img"><i class="fas fa-box"></i></div>
+                  <div class="product-body">
+                    <div class="product-tags">${(p.tags || []).map(t => '<span>' + sanitize(t) + '</span>').join('')}</div>
+                    <h3>${sanitize(p.name)}</h3>
+                    <p>${sanitize(p.description || '')}</p>
+                    <span class="product-price">$${parseFloat(p.price).toFixed(2)}</span>
+                    <div class="product-rating" style="margin:8px 0;font-size:0.9rem;">${stars} <span style="color:#888;font-size:0.8rem;">(${p.reviewCount} review${p.reviewCount!==1?'s':''})</span></div>
+                    <button class="btn view-reviews-btn" data-id="${p.id}" style="font-size:0.8rem;padding:4px 10px;background:#e8e8e8;color:#333;">Reviews</button>
+                    <button class="btn buy-btn" data-id="${p.id}" style="font-size:0.8rem;padding:4px 10px;background:#2ecc71;color:#fff;float:right;">Buy Now</button>
+                  </div>
+                </div>`;
+              }).join('');
+          grid.querySelectorAll('.buy-btn').forEach(btn => {
+            btn.addEventListener('click', async () => await buyProduct(btn.dataset.id));
+          });
+          grid.querySelectorAll('.view-reviews-btn').forEach(btn => {
+            btn.addEventListener('click', async () => await toggleReviews(btn.dataset.id, btn));
+          });
+        }
+
+        // update admin table if visible
+        const tbody = document.getElementById('productsTableBody');
+        if (tbody && document.getElementById('panel-products').classList.contains('active')) {
+          renderProducts();
+        }
+        // update seller dashboard if visible
+        const sellerSection = document.getElementById('sellerSection');
+        if (sellerSection && sellerSection.style.display === 'block') {
+          renderSellerProducts();
+          renderSellerStats();
+          renderSellerSales();
+        }
+      } catch {}
+    }
+
+    setInterval(pollProducts, 5000);
 
     // Init
     (async function init() {

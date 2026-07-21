@@ -28,7 +28,6 @@ async function handleAPI(q, r, body) {
   const [resource, id] = parts;
 
   try {
-    // Seed admin
     const { rowCount } = await pool.query('SELECT 1 FROM public.users WHERE email = $1', ['admin@admin.com']);
     if (rowCount === 0) {
       await pool.query('INSERT INTO public.users (name, email, pwd, role) VALUES ($1, $2, $3, $4)', ['Admin', 'admin@admin.com', ADMIN_HASH, 'admin']);
@@ -40,7 +39,6 @@ async function handleAPI(q, r, body) {
       return rows[0] || null;
     }
 
-    // SIGNUP
     if (resource === 'signup' && q.method === 'POST') {
       const { name, email, pwd } = body;
       const { rows: existing } = await pool.query('SELECT id FROM public.users WHERE email = $1', [email]);
@@ -49,7 +47,6 @@ async function handleAPI(q, r, body) {
       return json(r, 201, rows[0]);
     }
 
-    // LOGIN
     if (resource === 'login' && q.method === 'POST') {
       const { email, pwd } = body;
       const { rows } = await pool.query('SELECT name, email, role FROM public.users WHERE email = $1 AND pwd = $2', [email, pwd]);
@@ -57,7 +54,6 @@ async function handleAPI(q, r, body) {
       return json(r, 200, rows[0]);
     }
 
-    // PRODUCTS
     if (resource === 'products') {
       if (q.method === 'GET') {
         const { rows } = await pool.query('SELECT * FROM public.products ORDER BY created_at DESC');
@@ -81,7 +77,6 @@ async function handleAPI(q, r, body) {
       }
     }
 
-    // USERS
     if (resource === 'users') {
       const requester = await getRequester(q.headers['x-user-email']);
       if (!requester || requester.role !== 'admin') return json(r, 403, { error: 'Admin required' });
@@ -96,7 +91,6 @@ async function handleAPI(q, r, body) {
       }
     }
 
-    // STATS
     if (resource === 'stats') {
       const requester = await getRequester(q.headers['x-user-email']);
       if (!requester || requester.role !== 'admin') return json(r, 403, { error: 'Admin required' });

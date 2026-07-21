@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Chat</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #0f0f0f; color: #e0e0e0; height: 100vh; overflow: hidden;
+    }
+
+    /* ----- LOGIN SCREEN ----- */
+    .login-screen {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    .login-card {
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(20px);
+      border-radius: 24px; padding: 48px; max-width: 400px; width: 100%;
+      border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-card .icon { font-size: 48px; color: #e94560; margin-bottom: 12px; }
+    .login-card h1 { font-size: 28px; margin-bottom: 4px; }
+    .login-card p.subtitle { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 28px; }
+    .login-card label { display: block; text-align: left; color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+    .login-card input {
+      width: 100%; padding: 14px 16px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06);
+      color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
+    }
+    .login-card input:focus { border-color: #e94560; }
+    .login-card input::placeholder { color: rgba(255,255,255,0.25); }
+    .login-card .btn {
+      width: 100%; padding: 14px; margin-top: 16px; border-radius: 12px;
+      border: none; background: #e94560; color: #fff; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .login-card .btn:hover { opacity: 0.9; }
+    .login-card .btn:active { transform: scale(0.97); }
+    .login-card .error { color: #ff4d4d; font-size: 13px; margin-top: 8px; min-height: 20px; }
+
+    /* ----- MAIN CHAT LAYOUT ----- */
+    .chat-layout { display: none; height: 100vh; }
+    .chat-layout.active { display: flex; }
+
+    /* ----- LEFT SIDEBAR (rooms) ----- */
+    .room-panel {
+      width: 220px; background: #1a1a2e; display: flex; flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;
+    }
+    .room-panel .header {
+      padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .room-panel .header h2 { font-size: 15px; font-weight: 700; color: #e94560; }
+    .room-panel .header button {
+      background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer;
+      font-size: 16px; transition: color 0.2s;
+    }
+    .room-panel .header button:hover { color: #e94560; }
+    .room-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .room-item {
+      padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px;
+      transition: background 0.2s; display: flex; align-items: center; gap: 8px;
+    }
+    .room-item:hover { background: rgba(255,255,255,0.06); }
+    .room-item.active { background: rgba(233,69,96,0.15); color: #e94560; }
+    .room-item i { font-size: 12px; color: rgba(255,255,255,0.3); width: 16px; }
+    .room-item.active i { color: #e94560; }
+    .create-room-form { padding: 8px; border-top: 1px solid rgba(255,255,255,0.06); display: none; }
+    .create-room-form.show { display: block; }
+    .create-room-form input {
+      width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06); color: #fff; font-size: 13px; outline: none;
+    }
+    .create-room-form input:focus { border-color: #e94560; }
+    .create-room-form .actions { display: flex; gap: 6px; margin-top: 6px; }
+    .create-room-form .actions button {
+      flex: 1; padding: 6px; border-radius: 6px; border: none; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+    }
+    .create-room-form .actions .save { background: #e94560; color: #fff; }
+    .create-room-form .actions .cancel { background: rgba(255,255,255,0.1); color: #aaa; }
+
+    /* ----- CENTER PANEL (messages) ----- */
+    .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #0f0f0f; }
+    .chat-topbar {
+      padding: 12px 20px; background: #1a1a2e; border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .chat-topbar .room-info { display: flex; align-items: center; gap: 10px; }
+    .chat-topbar .room-info h3 { font-size: 16px; font-weight: 600; }
+    .chat-topbar .room-info .hash { color: #e94560; font-size: 18px; }
+    .chat-topbar .user-info { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.5); }
+    .chat-topbar .user-info .avatar {
+      width: 30px; height: 30px; border-radius: 50%; background: #e94560;
+      display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff;
+    }
+    .chat-topbar .leave-btn {
+      background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5);
+      padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;
+    }
+    .chat-topbar .leave-btn:hover { border-color: #e94560; color: #e94560; }
+
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .chat-messages .loading, .chat-messages .empty {
+      text-align: center; color: rgba(255,255,255,0.3); font-size: 14px; padding: 40px 0;
+    }
+    .msg {
+      display: flex; gap: 10px; max-width: 85%; animation: fadeIn 0.2s ease;
+    }
+    .msg.self { align-self: flex-end; flex-direction: row-reverse; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .msg .avatar {
+      width: 32px; height: 32px; border-radius: 50%; background: #0f3460;
+      display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .msg.self .avatar { background: #e94560; }
+    .msg .body { display: flex; flex-direction: column; }
+    .msg .body .name { font-size: 12px; font-weight: 600; color: #0f3460; margin-bottom: 2px; }
+    .msg.self .body .name { color: #e94560; text-align: right; }
+    .msg .body .bubble {
+      padding: 8px 14px; border-radius: 16px; background: #1a1a2e; font-size: 14px;
+      line-height: 1.5; word-wrap: break-word;
+    }
+    .msg .body .bubble.system {
+      background: transparent; color: rgba(255,255,255,0.3); text-align: center;
+      font-size: 12px; font-style: italic;
+    }
+    .msg.self .body .bubble { background: #e94560; color: #fff; border-bottom-right-radius: 4px; }
+    .msg:not(.self) .body .bubble { border-bottom-left-radius: 4px; }
+    .msg .body .time {
+      font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; padding: 0 4px;
+    }
+    .msg.self .body .time { text-align: right; }
+
+    .chat-input-area {
+      padding: 12px 20px; background: #1a1a2e; border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; gap: 10px; align-items: center;
+    }
+    .chat-input-area input {
+      flex: 1; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06); color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
+    }
+    .chat-input-area input:focus { border-color: #e94560; }
+    .chat-input-area input::placeholder { color: rgba(255,255,255,0.25); }
+    .chat-input-area button {
+      width: 44px; height: 44px; border-radius: 50%; border: none; background: #e94560;
+      color: #fff; font-size: 16px; cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .chat-input-area button:hover { opacity: 0.9; }
+    .chat-input-area button:active { transform: scale(0.95); }
+    .chat-input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ----- RIGHT SIDEBAR (online) ----- */
+    .online-panel {
+      width: 180px; background: #1a1a2e; border-left: 1px solid rgba(255,255,255,0.06);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .online-panel .header {
+      padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 6px;
+    }
+    .online-panel .header .count {
+      background: #4ecca3; color: #0f0f0f; border-radius: 10px; padding: 0 6px;
+      font-size: 10px; line-height: 16px;
+    }
+    .online-list { padding: 8px; overflow-y: auto; flex: 1; }
+    .online-user {
+      padding: 6px 8px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px;
+    }
+    .online-user .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #4ecca3; flex-shrink: 0;
+    }
+    .online-user .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ----- SCROLLBAR ----- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* ----- RESPONSIVE ----- */
+    @media (max-width: 768px) {
+      .room-panel { display: none; }
+      .room-panel.mobile-show { display: flex; position: fixed; left: 0; top: 0; height: 100vh; width: 260px; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.5); }
+      .online-panel { display: none; }
+      .chat-topbar .room-info { cursor: pointer; }
+      .msg { max-width: 95%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="icon"><i class="fas fa-comments"></i></div>
+      <h1>Group Chat</h1>
+      <p class="subtitle">Join the conversation</p>
+      <label for="nameInput">Your display name</label>
+      <input type="text" id="nameInput" placeholder="Enter your name..." maxlength="50" autocomplete="off">
+      <div class="error" id="loginError"></div>
+      <button class="btn" id="joinBtn">Join Chat</button>
+    </div>
+  </div>
+
+  <!-- MAIN CHAT LAYOUT -->
+  <div class="chat-layout" id="chatLayout">
+
+    <!-- ROOMS SIDEBAR -->
+    <div class="room-panel" id="roomPanel">
+      <div class="header">
+        <h2><i class="fas fa-hashtag"></i> Rooms</h2>
+        <button id="addRoomBtn" title="New Room"><i class="fas fa-plus"></i></button>
+      </div>
+      <div class="room-list" id="roomList"></div>
+      <div class="create-room-form" id="createRoomForm">
+        <input type="text" id="newRoomInput" placeholder="Room name..." maxlength="100">
+        <div class="actions">
+          <button class="save" id="saveRoomBtn">Create</button>
+          <button class="cancel" id="cancelRoomBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT MAIN -->
+    <div class="chat-main">
+      <div class="chat-topbar">
+        <div class="room-info" id="roomInfo">
+          <span class="hash"><i class="fas fa-hashtag"></i></span>
+          <h3 id="roomName">Select a room</h3>
+        </div>
+        <div class="user-info">
+          <span id="userNameDisplay"></span>
+          <div class="avatar" id="userAvatar"></div>
+          <button class="leave-btn" id="leaveBtn"><i class="fas fa-sign-out-alt"></i> Leave</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="empty">Select a room to start chatting</div>
+      </div>
+
+      <div class="chat-input-area" id="chatInputArea" style="display:none;">
+        <input type="text" id="msgInput" placeholder="Type a message..." maxlength="2000" autocomplete="off">
+        <button id="sendBtn" title="Send"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <!-- ONLINE SIDEBAR -->
+    <div class="online-panel" id="onlinePanel">
+      <div class="header">
+        <i class="fas fa-circle" style="color:#4ecca3;font-size:8px;"></i> Online
+        <span class="count" id="onlineCount">0</span>
+      </div>
+      <div class="online-list" id="onlineList"></div>
+    </div>
+  </div>
+
+  <script>
+    // ----- STATE -----
+    const state = {
+      user: null,
+      currentRoom: null,
+      lastMessageId: null,
+      displayedIds: new Set(),
+      rooms: [],
+      onlineUsers: [],
+      pollTimer: null,
+      sending: false,
+    };
+
+    const API = (path) => '/api/chat' + path;
+
+    // ----- DOM REFS -----
+    const $ = (id) => document.getElementById(id);
+    const loginScreen = $('loginScreen');
+    const chatLayout = $('chatLayout');
+    const nameInput = $('nameInput');
+    const loginError = $('loginError');
+    const joinBtn = $('joinBtn');
+    const roomList = $('roomList');
+    const addRoomBtn = $('addRoomBtn');
+    const createRoomForm = $('createRoomForm');
+    const newRoomInput = $('newRoomInput');
+    const saveRoomBtn = $('saveRoomBtn');
+    const cancelRoomBtn = $('cancelRoomBtn');
+    const roomName = $('roomName');
+    const roomInfo = $('roomInfo');
+    const userNameDisplay = $('userNameDisplay');
+    const userAvatar = $('userAvatar');
+    const leaveBtn = $('leaveBtn');
+    const chatMessages = $('chatMessages');
+    const chatInputArea = $('chatInputArea');
+    const msgInput = $('msgInput');
+    const sendBtn = $('sendBtn');
+    const onlineList = $('onlineList');
+    const onlineCount = $('onlineCount');
+
+    // ----- HELPERS -----
+    function getInitials(name) {
+      return name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+    }
+
+    function formatTime(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch { return ''; }
+    }
+
+    function scrollToBottom() {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function setLoading(msg) {
+      chatMessages.innerHTML = `<div class="loading">${msg}</div>`;
+    }
+
+    // ----- LOGIN -----
+    joinBtn.addEventListener('click', () => doLogin());
+    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+
+    function doLogin() {
+      const name = nameInput.value.trim();
+      if (!name) { loginError.textContent = 'Please enter your name'; return; }
+      if (name.length > 50) { loginError.textContent = 'Name too long (max 50)'; return; }
+      state.user = name;
+      userNameDisplay.textContent = name;
+      userAvatar.textContent = getInitials(name);
+      loginScreen.style.display = 'none';
+      chatLayout.classList.add('active');
+      loginError.textContent = '';
+      initChat();
+    }
+
+    // ----- INIT -----
+    async function initChat() {
+      await loadRooms();
+      startPolling();
+    }
+
+    // ----- ROOMS -----
+    async function loadRooms() {
+      try {
+        const res = await fetch(API('/rooms'));
+        if (!res.ok) return;
+        state.rooms = await res.json();
+        renderRooms();
+        const saved = localStorage.getItem('chat_room_' + state.user);
+        if (saved && state.rooms.some(r => r.id == saved)) {
+          switchRoom(parseInt(saved));
+        } else if (state.rooms.length > 0) {
+          switchRoom(state.rooms[0].id);
+        }
+      } catch {}
+    }
+
+    function renderRooms() {
+      roomList.innerHTML = state.rooms.map(r =>
+        `<div class="room-item${state.currentRoom === r.id ? ' active' : ''}" data-id="${r.id}">
+          <i class="fas fa-hashtag"></i> ${r.name}
+        </div>`
+      ).join('');
+      document.querySelectorAll('.room-item').forEach(el => {
+        el.addEventListener('click', () => switchRoom(parseInt(el.dataset.id)));
+      });
+    }
+
+    addRoomBtn.addEventListener('click', () => {
+      createRoomForm.classList.toggle('show');
+      if (createRoomForm.classList.contains('show')) newRoomInput.focus();
+    });
+    cancelRoomBtn.addEventListener('click', () => {
+      createRoomForm.classList.remove('show');
+      newRoomInput.value = '';
+    });
+    saveRoomBtn.addEventListener('click', async () => {
+      const name = newRoomInput.value.trim();
+      if (!name) return;
+      try {
+        const res = await fetch(API('/rooms'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        });
+        if (!res.ok) return;
+        const room = await res.json();
+        state.rooms.push(room);
+        renderRooms();
+        switchRoom(room.id);
+        newRoomInput.value = '';
+        createRoomForm.classList.remove('show');
+      } catch {}
+    });
+    newRoomInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveRoomBtn.click();
+    });
+
+    // ----- SWITCH ROOM -----
+    function switchRoom(roomId) {
+      if (state.currentRoom === roomId) return;
+      state.currentRoom = roomId;
+      state.lastMessageId = null;
+      state.displayedIds = new Set();
+      localStorage.setItem('chat_room_' + state.user, roomId);
+
+      const room = state.rooms.find(r => r.id === roomId);
+      roomName.textContent = room ? room.name : 'Unknown';
+      renderRooms();
+      chatInputArea.style.display = 'flex';
+      msgInput.focus();
+
+      setLoading('Loading messages...');
+      chatMessages.scrollTop = 0;
+      loadMessages();
+    }
+
+    // ----- MESSAGES -----
+    async function loadMessages() {
+      if (!state.currentRoom) return;
+      try {
+        const url = API('/messages?room_id=' + state.currentRoom) + (state.lastMessageId ? '&since_id=' + state.lastMessageId : '');
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const msgs = await res.json();
+
+        if (!state.lastMessageId) {
+          chatMessages.innerHTML = '';
+          if (msgs.length === 0) {
+            chatMessages.innerHTML = '<div class="empty">No messages yet. Start the conversation!</div>';
+          } else {
+            const container = document.createElement('div');
+            msgs.forEach(m => {
+              state.displayedIds.add(m.id);
+              const el = createMessageElement(m);
+              if (el) container.appendChild(el);
+            });
+            chatMessages.appendChild(container);
+            scrollToBottom();
+          }
+          if (msgs.length > 0) {
+            state.lastMessageId = msgs[msgs.length - 1].id;
+          }
+        } else if (msgs.length > 0) {
+          msgs.forEach(m => appendMessage(m));
+          state.lastMessageId = msgs[msgs.length - 1].id;
+          scrollToBottom();
+        }
+      } catch {}
+    }
+
+    function createMessageElement(msg) {
+      const isSelf = msg.sender_name === state.user;
+      const isSystem = msg.sender_name === '__system__';
+      const div = document.createElement('div');
+      div.className = 'msg' + (isSelf ? ' self' : '');
+      if (isSystem) {
+        div.innerHTML = `<div class="body"><div class="bubble system">${escapeHtml(msg.message)}</div></div>`;
+        return div;
+      }
+      div.innerHTML = `
+        <div class="avatar">${escapeHtml(getInitials(msg.sender_name))}</div>
+        <div class="body">
+          <div class="name">${escapeHtml(msg.sender_name)}</div>
+          <div class="bubble">${escapeHtml(msg.message)}</div>
+          <div class="time">${formatTime(msg.created_at)}</div>
+        </div>
+      `;
+      return div;
+    }
+
+    function appendMessage(msg) {
+      if (state.displayedIds.has(msg.id)) return;
+      state.displayedIds.add(msg.id);
+      const el = createMessageElement(msg);
+      if (el) chatMessages.appendChild(el);
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    // ----- SEND MESSAGE -----
+    sendBtn.addEventListener('click', () => sendMessage());
+    msgInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    async function sendMessage() {
+      const text = msgInput.value.trim();
+      if (!text || state.sending || !state.currentRoom) return;
+      state.sending = true;
+      sendBtn.disabled = true;
+      try {
+        const res = await fetch(API('/messages'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ room_id: state.currentRoom, sender_name: state.user, message: text }),
+        });
+        if (res.ok) {
+          const msg = await res.json();
+          appendMessage(msg);
+          state.lastMessageId = msg.id;
+          scrollToBottom();
+          msgInput.value = '';
+          msgInput.focus();
+        }
+      } catch {}
+      state.sending = false;
+      sendBtn.disabled = false;
+    }
+
+    // ----- HEARTBEAT & ONLINE -----
+    async function sendHeartbeat() {
+      if (!state.user || !state.currentRoom) return;
+      try {
+        await fetch(API('/heartbeat'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: state.user, room_id: state.currentRoom }),
+        });
+      } catch {}
+    }
+
+    async function loadOnline() {
+      if (!state.currentRoom) return;
+      try {
+        const res = await fetch(API('/online?room_id=' + state.currentRoom));
+        if (!res.ok) return;
+        state.onlineUsers = await res.json();
+        onlineCount.textContent = state.onlineUsers.length;
+        onlineList.innerHTML = state.onlineUsers.map(u =>
+          `<div class="online-user"><span class="dot"></span><span class="name">${escapeHtml(u.username)}</span></div>`
+        ).join('');
+      } catch {}
+    }
+
+    // ----- POLLING -----
+    function startPolling() {
+      stopPolling();
+      state.pollTimer = setInterval(async () => {
+        if (!state.currentRoom) return;
+        await Promise.allSettled([
+          loadMessages(),
+          sendHeartbeat(),
+          loadOnline(),
+        ]);
+      }, 2000);
+    }
+
+    function stopPolling() {
+      if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
+    }
+
+    // ----- LEAVE -----
+    leaveBtn.addEventListener('click', () => {
+      stopPolling();
+      state.user = null;
+      state.currentRoom = null;
+      state.lastMessageId = null;
+      state.onlineUsers = [];
+      state.rooms = [];
+      chatMessages.innerHTML = '<div class="empty">Select a room to start chatting</div>';
+      chatInputArea.style.display = 'none';
+      chatLayout.classList.remove('active');
+      loginScreen.style.display = 'flex';
+      nameInput.value = '';
+      nameInput.focus();
+    });
+
+    // ----- BACK TO ROOMS (mobile) -----
+    roomInfo.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        document.getElementById('roomPanel').classList.toggle('mobile-show');
+      }
+    });
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('roomPanel');
+      if (window.innerWidth <= 768 && panel.classList.contains('mobile-show') && !panel.contains(e.target) && e.target !== roomInfo) {
+        panel.classList.remove('mobile-show');
+      }
+    });
+
+    // ----- STOP POLLING ON TAB HIDE -----
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopPolling();
+      else if (state.user && state.currentRoom) startPolling();
+    });
+
+    // ----- PREFILL FROM MAIN APP SESSION -----
+    try {
+      const s = JSON.parse(localStorage.getItem('_s') || 'null');
+      if (s && s.name && Date.now() - s.loginAt < 30 * 60 * 1000) {
+        nameInput.value = s.name;
+      }
+    } catch {}
+
+    // ----- ENTER KEY ON LOGIN -----
+    nameInput.focus();
+  </script>
+</body>
+</html>

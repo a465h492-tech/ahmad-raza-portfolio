@@ -185,7 +185,7 @@ export default function Home() {
         <div className="container">
           <h2 className="section-title">Get In Touch</h2>
           <p className="contact-intro">I&apos;m currently open to new opportunities. Whether you have a question or just want to say hi, feel free to reach out!</p>
-          <p className="contact-email">Or reach me directly at <a href="mailto:ahmadaliraza646@gmail.com">ahmadaliraza646@gmail.com</a></p>
+          <p className="contact-email">Or reach me directly at <a href="mailto:ahmadrazaweb7@gmail.com">ahmadrazaweb7@gmail.com</a></p>
           <form id="contact-form" ref={contactFormRef} onSubmit={handleContactSubmit}>
             <input type="text" placeholder="Your Name" required />
             <input type="email" placeholder="Your Email" required />

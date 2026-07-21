@@ -158,7 +158,7 @@ const chatbotResponses = [
   { keywords: ['who are you', 'about', 'tell me about'], response: 'I\'m Ahmad Raza, a passionate web developer and designer who loves building things for the web.' },
   { keywords: ['skills', 'technologies', 'tech stack', 'what can you do'], response: 'Ahmad works with HTML5, CSS3, JavaScript, React, Node.js, Git, Databases, and TypeScript.' },
   { keywords: ['projects', 'portfolio', 'work', 'what have you done'], response: 'Check out the Projects section above! Ahmad has built several web projects using various technologies.' },
-  { keywords: ['contact', 'email', 'reach', 'hire'], response: 'You can reach Ahmad at ahmadaliraza646@gmail.com or use the contact form on this page!' },
+  { keywords: ['contact', 'email', 'reach', 'hire'], response: 'You can reach Ahmad at ahmadrazaweb7@gmail.com or use the contact form on this page!' },
   { keywords: ['experience', 'background', 'career'], response: 'Ahmad is a web developer based in your city, passionate about creating interactive web applications and exploring new technologies.' },
   { keywords: ['resume', 'cv', 'download'], response: 'You can reach out via the contact section or email Ahmad directly to request a resume.' },
   { keywords: ['thanks', 'thank you', 'appreciate'], response: 'You\'re welcome! Feel free to ask if you have more questions.' },
@@ -199,7 +199,9 @@ chatbotToggle.addEventListener('click', () => {
   if (chatbotWindow.classList.contains('open')) chatbotInput.focus();
 });
 
-chatbotClose.addEventListener('click', () => chatbotWindow.classList.remove('open'));
+chatbotClose.addEventListener('click', () => {
+  chatbotWindow.classList.remove('open');
+});
 
 chatbotSend.addEventListener('click', sendMessage);
 
